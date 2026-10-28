@@ -71,6 +71,7 @@ jobs:
           if [ "$PRERELEASE" = true ]; then
             latest="$(pnpm view "$package" dist-tags.latest --registry https://registry.npmjs.org)"
             if [ "$latest" = "$version" ]; then
-              pnpm dist-tag rm "$package" latest --registry https://registry.npmjs.org
+              # pnpm protects latest from removal; use npm's registry administration command.
+              pnpm dlx npm@11.21.1 dist-tag rm "$package" latest --registry https://registry.npmjs.org
             fi
           fi

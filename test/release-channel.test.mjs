@@ -78,7 +78,7 @@ case "$1:$2" in
       dist-tags.latest) printf '%s\\n' "$LATEST" ;;
       *) exit 2 ;;
     esac ;;
-  dist-tag:rm) printf '%s\\n' "$@" > "$MUTATIONS" ;;
+  dlx:npm@11.21.1) printf '%s\\n' "$@" > "$MUTATIONS" ;;
   *) exit 2 ;;
 esac
 `, { mode: 0o755 });
@@ -98,7 +98,7 @@ esac
       env: { ...process.env, PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH}`, PRERELEASE: prerelease, NPM_TAG: tag, NEXT: next, LATEST: latest, MUTATIONS: mutations },
     });
     assert.equal(result.status, status, result.stderr);
-    if (remove) assert.deepEqual((await readFile(mutations, 'utf8')).trim().split('\n'), ['dist-tag', 'rm', '@aruniverse/logi-rex', 'latest', '--registry', 'https://registry.npmjs.org']);
+    if (remove) assert.deepEqual((await readFile(mutations, 'utf8')).trim().split('\n'), ['dlx', 'npm@11.21.1', 'dist-tag', 'rm', '@aruniverse/logi-rex', 'latest', '--registry', 'https://registry.npmjs.org']);
     else await assert.rejects(readFile(mutations), { code: 'ENOENT' });
   }
 });

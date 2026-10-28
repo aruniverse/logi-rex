@@ -114,7 +114,7 @@ The workflow validates a canonical SemVer package version and requires the exact
 | `0.1.0` | Stable, Latest | `latest` |
 | `0.1.0-alpha.2`, `0.1.0-beta.1`, `0.1.0-rc.1` | Prerelease, never Latest | `next` |
 
-Missing or inconsistent channel outputs stop publication. Publishing waits up to two minutes for registry visibility, then checks the actual dist-tag. If npm assigned this prerelease to `latest`, the workflow removes only that alias; it preserves any other version already on `latest`. The workflow does not bump the version. Start from a clean, committed worktree after configuring npm publishing.
+Missing or inconsistent channel outputs stop publication. Publishing waits up to two minutes for registry visibility, then checks the actual dist-tag. If npm assigned this prerelease to `latest`, the workflow removes only that alias; it preserves any other version already on `latest`. This registry-administration operation runs npm 11.21.1 through `pnpm dlx` because pnpm itself forbids removing `latest`. Builds, dependency installation, and publication still use pnpm. The workflow does not bump the version. Start from a clean, committed worktree after configuring npm publishing.
 
 ### Experimental release
 
