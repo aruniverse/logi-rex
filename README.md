@@ -59,7 +59,7 @@ logi-rex clients
 logi-rex doctor
 ```
 
-For a pinned installation, use `@aruniverse/logi-rex@0.1.0-alpha.2`. Always opt into this preview explicitly. The initial npm bootstrap also assigned `latest` to this alpha; removing that alias is pending registry authorization. A bare package name currently selects the same alpha, not a stable release. If an old `.npmrc` maps `@aruniverse` to GitHub Packages, remove or change that scope mapping to `https://registry.npmjs.org` first; preserve unrelated settings.
+For a pinned installation, use `@aruniverse/logi-rex@0.1.0-alpha.3`. Always opt into this preview explicitly. The initial npm bootstrap also assigned `latest` to `0.1.0-alpha.2`; removal remains a separate registry-authorization check. A bare package name is not a request for a stable release while that bootstrap alias exists. If an old `.npmrc` maps `@aruniverse` to GitHub Packages, remove or change that scope mapping to `https://registry.npmjs.org` first; preserve unrelated settings.
 
 For a one-off command without a global installation:
 
@@ -75,7 +75,7 @@ Alternatively, download the release's `.tgz` and `SHA256SUMS`, then verify and i
 
 ```sh
 shasum -a 256 -c SHA256SUMS
-pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.2.tgz
+pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.3.tgz
 ```
 
 This route also requires no registry credentials. Use the filename/version of the release you downloaded; an alpha archive includes its prerelease suffix. Both routes install the same CLI/export package.
@@ -91,7 +91,7 @@ pnpm install --frozen-lockfile
 pnpm test
 pnpm run verify:artifacts
 node dist/cli.mjs doctor
-pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.2.tgz
+pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.3.tgz
 ```
 
 `pnpm run verify:artifacts` builds both archives, tests the minified code and packaged plugin, and verifies a clean install of the CLI. It needs `tar` and `unzip`, provided by macOS and the hosted macOS/Linux CI runners. `pnpm run build:pack` remains available for a build without artifact verification.
