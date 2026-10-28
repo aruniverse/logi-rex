@@ -10,7 +10,7 @@ Use buttons, gestures, keyboard controls, and exposed wheel/dial inputs to switc
 
 - `aruniverse-logi-rex-<version>.tgz`: the CLI/export package, downloadable from GitHub Releases without a registry login.
 - `SHA256SUMS`: checksum for the released archive.
-- `@aruniverse/logi-rex@next`: the same prerelease package in GitHub Packages.
+- Future tags target the public npm registry as `@aruniverse/logi-rex`; previews use `next`, stable versions use `latest`. The first npmjs.org publication is pending [publisher setup](docs/publishing.md#configure-npm-publishing). The existing `v0.1.0-alpha.1` remains available from GitHub Releases.
 
 The source/package retains experimental SDK code. `LogiRex.lplug4` can be built for development and protocol tests, but it is not a published release asset until real Options+ host acceptance is verified.
 
@@ -59,7 +59,7 @@ logi-rex clients
 logi-rex doctor
 ```
 
-This route does not require GitHub Packages credentials. Use the filename/version of the release you downloaded; an alpha archive includes its prerelease suffix. If you prefer the registry, see [GitHub Packages installation](docs/publishing.md#install-from-github-packages). Prereleases use `@aruniverse/logi-rex@next`, not the default stable channel.
+This route requires no registry credentials. Use the filename/version of the release you downloaded; an alpha archive includes its prerelease suffix. Once the first npmjs.org release is published, use [npm installation](docs/publishing.md#install-from-npm). Previews use `@aruniverse/logi-rex@next`, not the default stable channel.
 
 ### Build locally
 
@@ -205,7 +205,7 @@ CLI/plugin dispatches use argument arrays, not shell commands. Plugin events sha
 
 ## Publish
 
-See [the publishing guide](docs/publishing.md). CI tests macOS and Linux on Node.js 22 and 24, including minified builds, archive validation, packaged-plugin protocol tests, and an isolated CLI install/export smoke test. The version-tag workflow uses the same artifact gate before uploading checksums and archives to a GitHub Release and publishing to GitHub Packages. Stable versions use `latest`; alpha/beta/RC versions use npm's `next` tag and GitHub prereleases that cannot become Latest. Missing or inconsistent channel outputs stop publication. No workflow changes the version or publishes until you push a matching version tag.
+See [the publishing guide](docs/publishing.md). CI tests macOS and Linux on Node.js 22 and 24, including minified builds, archive validation, packaged-plugin protocol tests, and an isolated CLI install/export smoke test. The version-tag workflow uses the same artifact gate before uploading checksums and archives to a GitHub Release and publishing the verified archive publicly to npmjs.org with provenance. npm trusted publishing uses GitHub Actions OIDC; a temporary `NPM_TOKEN` secret supports the first publication before package-level trust can be configured. Stable versions use `latest`; alpha/beta/RC versions use npm's `next` tag and GitHub prereleases that cannot become Latest. Missing or inconsistent channel outputs stop publication. No workflow changes the version or publishes until you push a matching version tag.
 
 ## License
 

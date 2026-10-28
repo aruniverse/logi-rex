@@ -27,7 +27,7 @@ To test the npm archive without modifying your global install:
 
 ```sh
 mkdir -p /tmp/logi-rex-check
-pnpm --dir /tmp/logi-rex-check add "$(pwd)/aruniverse-logi-rex-0.1.0.tgz"
+pnpm --dir /tmp/logi-rex-check add "$(pwd)/aruniverse-logi-rex-0.1.0-alpha.1.tgz"
 /tmp/logi-rex-check/node_modules/.bin/logi-rex --help
 ```
 
@@ -48,83 +48,138 @@ git push -u origin main
 
 Nothing in the local build creates a remote, pushes code, or publishes a package.
 
-## Release a version
+## Configure npm publishing
 
-The tag-triggered workflow needs permission to write repository contents and packages. If an existing GitHub Package uses this name, grant this repository Actions access to it first. You do not need an npmjs.org token.
+New release tags target the public npm registry at `https://registry.npmjs.org`, not GitHub Packages. The first npmjs.org publication is pending account/bootstrap setup. The existing `v0.1.0-alpha.1` was published through GitHub Releases and GitHub Packages; its tag and assets are unchanged.
+
+The workflow has `contents: write` for GitHub Releases and `id-token: write` for npm trusted publishing. It does not need `packages: write`. `GITHUB_TOKEN` authenticates only the GitHub Release step, not npm publication. Releases use a fresh dependency install without restoring the CI dependency cache.
+
+### Confirm account and scope access
+
+Authenticate with npmjs.org and confirm the account:
+
+```sh
+pnpm login --registry=https://registry.npmjs.org
+pnpm whoami --registry=https://registry.npmjs.org
+```
+
+The account must own the npm username or organization scope `@aruniverse` and be allowed to publish public packages. A matching GitHub username does not establish npm ownership. Do not put credentials in this repository or paste tokens into issues, logs, or chat.
+
+### Bootstrap the first npm package
+
+npm trusted publishing is configured in an existing package's settings. If `@aruniverse/logi-rex` does not yet exist on npmjs.org, use a temporary token for the first tagged release:
+
+1. In npm's account settings, create a short-lived granular token with the scope/write permissions needed for the initial publication and permission to bypass 2FA for CI. Do not grant unrelated scopes.
+2. Add it privately as the repository Actions secret `NPM_TOKEN`. This command prompts for the value; do not put the value in the command:
+
+   ```sh
+   gh secret set NPM_TOKEN --repo aruniverse/logi-rex
+   ```
+
+3. Prepare and push a new preview version using the procedure below. Do not reuse `v0.1.0-alpha.1`. The workflow publishes the verified `.tgz` with public access, the classified dist-tag, and provenance.
+4. Confirm the new version is visible on npmjs.org before configuring trust.
+
+Do not create a release tag until the initial token or an existing trusted publisher is ready. A successful local test does not establish publishing authorization.
+
+### Configure tokenless releases
+
+In the npm package's **Settings → Trusted Publisher**, select **GitHub Actions** and enter:
+
+| Field | Value |
+| --- | --- |
+| Organization or user | `aruniverse` |
+| Repository | `logi-rex` |
+| Workflow filename | `release.yml` |
+| Environment name | Leave blank; this workflow does not declare one. |
+| Allowed actions | Enable direct `npm publish`; staged-only permission is insufficient. |
+
+Enter the filename only, not `.github/workflows/release.yml`. The package repository URL must continue to identify `https://github.com/aruniverse/logi-rex`.
+
+After saving the trusted publisher, remove the bootstrap secret:
+
+```sh
+gh secret delete NPM_TOKEN --repo aruniverse/logi-rex
+```
+
+Revoke that temporary token in npm. With no `NPM_TOKEN` secret, the publish step has no token credential and pnpm uses GitHub Actions OIDC. The next new version/tag verifies that path; never republish a version just to test authentication. Once OIDC publication succeeds, restrict token-based publishing in npm's package settings.
+
+See the [npm trusted publishing guide](https://docs.npmjs.com/trusted-publishers/) and [pnpm publishing options](https://pnpm.io/cli/publish). Public packages published from this public repository include provenance. Keep the existing pnpm pin; switching registries does not require changing package managers.
+
+## Release a version
 
 The workflow validates a canonical SemVer package version and requires the exact matching `vVERSION` tag. Channel selection is derived from the version, not a manual workflow toggle:
 
 | Version example | GitHub release | npm dist-tag |
 | --- | --- | --- |
 | `0.1.0` | Stable, Latest | `latest` |
-| `0.1.0-alpha.1`, `0.1.0-beta.1`, `0.1.0-rc.1` | Prerelease, never Latest | `next` |
+| `0.1.0-alpha.2`, `0.1.0-beta.1`, `0.1.0-rc.1` | Prerelease, never Latest | `next` |
 
-Missing or inconsistent channel outputs stop publication. The workflow does not bump the version. Start from a clean, committed worktree after creating the repository.
+Missing or inconsistent channel outputs stop publication. The workflow does not bump the version. Start from a clean, committed worktree after configuring npm publishing.
 
 ### Experimental release
 
-For an initial alpha, explicitly choose a prerelease version:
+For the next alpha after `0.1.0-alpha.1`:
 
 ```sh
-pnpm version 0.1.0-alpha.1
+pnpm version 0.1.0-alpha.2
 pnpm run verify:artifacts
-node scripts/release-info.mjs v0.1.0-alpha.1
+node scripts/release-info.mjs v0.1.0-alpha.2
 git push origin main --follow-tags
 ```
 
-For subsequent previews, use `pnpm version prerelease --preid=alpha` (or `beta` / `rc`), verify the artifacts, and push the new commit/tag. All of these preview identifiers use `next`.
+For later previews, use `pnpm version prerelease --preid=alpha` (or `beta` / `rc` for a deliberate label change), verify the artifacts, and push the new commit/tag. All preview identifiers use `next`.
 
 The metadata command prints the selected channel without publishing or writing workflow outputs. The version hook mirrors the full package version into the plugin manifest. Toolkit packaging is checked, but real Logitech-host acceptance and upgrade ordering for prerelease manifest versions still need validation. A GitHub prerelease label is not a host-compatibility guarantee.
 
 ### Stable release
 
-For a deliberate stable first release, the manifest and npm package already use `0.1.0`:
+To promote the `0.1.0` preview line to its first stable version:
 
 ```sh
-pnpm run verify:artifacts
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-For later releases, start from a clean worktree:
-
-```sh
-pnpm version patch
+pnpm version 0.1.0
 pnpm run verify:artifacts
 git push origin main --follow-tags
 ```
 
-The `pnpm version` hook updates and stages the Logitech manifest alongside the package version. The release workflow checks that the tag matches `package.json`, tests the project, verifies both built artifacts and an installed CLI, creates a GitHub Release with checksums, and publishes to `npm.pkg.github.com` using `GITHUB_TOKEN`.
+For later stable patches, use `pnpm version patch`, verify the artifacts, and push the new commit/tag.
 
-After an alpha, use `pnpm version 0.1.0` to prepare its stable version, verify it, and push the new commit/tag. Treat all published versions and tags as immutable.
+The `pnpm version` hook stages the plugin manifest alongside the package version. The workflow checks the tag, tests the project, verifies built artifacts and an installed CLI, creates a GitHub Release with checksums, and publishes the same `.tgz` publicly to npmjs.org with provenance. Treat all published versions and tags as immutable.
 
-If registry publication fails after the GitHub Release is created, the verified release files remain downloadable. Fix package permissions and publish that exact `.tgz` manually. Preserve its channel explicitly; an omitted `--tag` could promote an experimental build to `latest`:
+### Recover a failed registry publication
 
-```sh
-# Recovery example for the exact alpha archive already attached to the prerelease:
-pnpm publish ./aruniverse-logi-rex-0.1.0-alpha.1.tgz --tag next --ignore-scripts --no-git-checks
-```
+If npm publication fails after the GitHub Release is created, the verified files remain downloadable. Inspect the error, fix the account/token/trusted-publisher configuration, and recover the exact archive from that release. Do not rebuild it, replace its assets, or reuse its version for different code.
 
-Use `--tag latest` only for a stable version. Do not replace release assets or reuse a version for different code.
-
-Confirm the repository's Actions/package permissions and inspect the first release logs. A local artifact gate does not prove registry permissions or public package visibility.
-
-## Install from GitHub Packages
-
-GitHub's npm registry requires authentication even for public packages. Use a personal access token with `read:packages` when prompted by `pnpm login`; do not commit a token or put it in a command example:
+Check whether npm already contains the version before retrying. If it does, verify its integrity and dist-tag rather than publishing it again. If it does not, authenticate interactively and publish the exact downloaded archive. For example, for an unpublished alpha archive named `aruniverse-logi-rex-0.1.0-alpha.2.tgz`:
 
 ```sh
-pnpm login --scope=@aruniverse --auth-type=legacy --registry=https://npm.pkg.github.com
-pnpm add --global @aruniverse/logi-rex --registry=https://npm.pkg.github.com
+pnpm publish ./aruniverse-logi-rex-0.1.0-alpha.2.tgz --registry=https://registry.npmjs.org --access=public --tag=next --ignore-scripts --no-git-checks
 ```
 
-To opt into prereleases after authenticating, install the preview dist-tag explicitly:
+An interactive recovery may require 2FA and does not create GitHub Actions provenance. Use `--tag latest` only for a stable version. Inspect the first release logs and public metadata; local tests do not prove registry authorization, provenance, or public visibility.
+
+## Install from npm
+
+After the first npmjs.org publication, public installation requires no registry login. Previews are explicit:
 
 ```sh
-pnpm add --global @aruniverse/logi-rex@next --registry=https://npm.pkg.github.com
+pnpm add --global @aruniverse/logi-rex@next --registry=https://registry.npmjs.org
 ```
 
-Users who do not want a registry login can download the `.tgz` from the GitHub Release and install it directly. Both routes install the same CLI.
+Once a stable `latest` version exists:
+
+```sh
+pnpm add --global @aruniverse/logi-rex --registry=https://registry.npmjs.org
+```
+
+For a one-off command without a global installation:
+
+```sh
+pnpm --registry=https://registry.npmjs.org dlx @aruniverse/logi-rex@next doctor
+```
+
+If an old `.npmrc` maps `@aruniverse` to GitHub Packages, remove that mapping or change it to `https://registry.npmjs.org` before installing. Do not remove unrelated credentials or registry settings.
+
+The GitHub Release `.tgz` remains a public installation option before and after the npm migration. Both routes install the same CLI; neither modifies live Rex or OpenLogi configuration.
 
 ## Release claims and integration checks
 

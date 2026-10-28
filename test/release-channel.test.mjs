@@ -102,7 +102,12 @@ test('publishing uses the classified channel and fails closed if outputs are mis
     assert.equal(npmResult.status, 0, npmResult.stderr);
     const npmArgs = (await readFile(npmLog, 'utf8')).trim().split('\n');
     assert.equal(npmArgs[0], 'publish');
+    assert.ok(npmArgs.includes(`aruniverse-logi-rex-${version}.tgz`));
     assert.equal(npmArgs[npmArgs.indexOf('--tag') + 1], info.npmTag);
+    assert.equal(npmArgs[npmArgs.indexOf('--registry') + 1], 'https://registry.npmjs.org');
+    assert.equal(npmArgs[npmArgs.indexOf('--access') + 1], 'public');
+    assert.ok(npmArgs.includes('--provenance'));
+    assert.ok(npmArgs.includes('--ignore-scripts'));
     const noPublish = join(directory, 'must-not-publish');
     for (const [command, overrides] of [
       [github.run, { PRERELEASE: '' }],

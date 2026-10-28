@@ -253,7 +253,8 @@ test('manifest, npm package, executable, and icon versions are ready to distribu
   assert.equal(manifest.pluginRuntime, 'nodejs');
   assert.equal(manifest.entryPoint, 'index.mjs');
   assert.equal(pkg.name, '@aruniverse/logi-rex');
-  assert.equal(pkg.publishConfig.registry, 'https://npm.pkg.github.com');
+  assert.equal(pkg.publishConfig.registry, 'https://registry.npmjs.org');
+  assert.equal(pkg.publishConfig.access, 'public');
   assert.ok((await stat('dist/cli.mjs')).mode & 0o111);
   assert.ok((await stat('dist/metadata/Icon256x256.png')).size > 100);
   assert.ok((await stat('dist/actionicons/rex_next_tab.svg')).size > 100);

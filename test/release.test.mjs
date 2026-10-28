@@ -42,7 +42,8 @@ test('release and CI YAML have the required triggers and permissions', async () 
   const release = YAML.parse(await readFile('.github/workflows/release.yml', 'utf8'));
   assert.deepEqual(release.on.push.tags, ['v*']);
   assert.equal(release.permissions.contents, 'write');
-  assert.equal(release.permissions.packages, 'write');
+  assert.equal(release.permissions['id-token'], 'write');
+  assert.equal(release.permissions.packages, undefined);
   const steps = release.jobs.release.steps;
   assert.ok(steps.some(s => s.run?.includes('gh release create')));
   assert.ok(steps.some(s => /^\s*pnpm publish /m.test(s.run || '')));
@@ -53,12 +54,25 @@ test('release and CI YAML have the required triggers and permissions', async () 
     const job = Object.values(workflow.jobs)[0];
     const install = job.steps.findIndex(s => s.uses === 'pnpm/action-setup@v4');
     const node = job.steps.findIndex(s => s.uses === 'actions/setup-node@v4');
-    assert.ok(install >= 0 && install < node, 'pnpm must be available before setup-node configures its cache');
-    assert.equal(job.steps[node].with.cache, 'pnpm');
+    assert.ok(install >= 0 && install < node, 'pnpm must be available before setup-node');
+    assert.equal(job.steps[node].with.cache, workflow === ci ? 'pnpm' : undefined);
     assert.ok(job.steps.some(s => s.run === 'pnpm install --frozen-lockfile'));
     assert.ok(job.steps.some(s => s.run === 'pnpm run verify:artifacts'), 'packaged artifacts must be verified before publishing');
     assert.ok(!job.steps.some(s => /^npm\s/m.test(s.run || '')));
   }
+});
+
+test('npm publishing targets the public registry with OIDC and an optional bootstrap npm token', async () => {
+  const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+  assert.deepEqual(pkg.publishConfig, { registry: 'https://registry.npmjs.org', access: 'public' });
+  const workflow = YAML.parse(await readFile('.github/workflows/release.yml', 'utf8'));
+  const steps = workflow.jobs.release.steps;
+  const node = steps.find(step => step.uses === 'actions/setup-node@v4');
+  assert.equal(node.with['registry-url'], 'https://registry.npmjs.org');
+  assert.equal(node.with.scope, '@aruniverse');
+  const publish = steps.find(step => /^\s*pnpm publish /m.test(step.run || ''));
+  assert.equal(publish.env.NODE_AUTH_TOKEN, '${{ secrets.NPM_TOKEN }}');
+  assert.doesNotMatch(JSON.stringify({ node, publish }), /GITHUB_TOKEN|npm\.pkg\.github\.com/);
 });
 
 test('pnpm version hook updates and stages the plugin manifest without touching global git settings', async t => {

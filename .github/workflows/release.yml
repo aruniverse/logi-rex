@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: write
-  packages: write
+  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -21,8 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
+          registry-url: https://registry.npmjs.org
           scope: '@aruniverse'
       - run: pnpm install --frozen-lockfile
       - name: Classify version tag
@@ -45,9 +44,9 @@ jobs:
           gh release create "$GITHUB_REF_NAME" "${flags[@]}" \
             --verify-tag --title "logi-rex $GITHUB_REF_NAME" --generate-notes \
             aruniverse-logi-rex-*.tgz SHA256SUMS
-      - name: Publish GitHub Package
+      - name: Publish public npm package
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PRERELEASE: ${{ steps.release.outputs.prerelease }}
           NPM_TAG: ${{ steps.release.outputs.npm_tag }}
         run: |
@@ -55,4 +54,4 @@ jobs:
             true:next|false:latest) ;;
             *) echo "Invalid release channel; refusing to publish." >&2; exit 1 ;;
           esac
-          pnpm publish aruniverse-logi-rex-*.tgz --ignore-scripts --no-git-checks --tag "$NPM_TAG"
+          pnpm publish aruniverse-logi-rex-*.tgz --registry https://registry.npmjs.org --access public --provenance --ignore-scripts --no-git-checks --tag "$NPM_TAG"
