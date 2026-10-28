@@ -1,6 +1,6 @@
 type: plugin4
 name: LogiRex
-version: 0.1.0-alpha.2
+version: 0.1.0-alpha.3
 displayName: logi-rex
 description: Rex commands and adjustments through the Logi Actions SDK.
 author: aruniverse
