@@ -3,6 +3,7 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,12 +27,21 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Classify version tag
         id: release
-        run: node scripts/release-info.mjs "$GITHUB_REF_NAME" --github-output "$GITHUB_OUTPUT"
+        run: |
+          tag="$GITHUB_REF_NAME"
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            tag="v$(node -p "require('./package.json').version")"
+          fi
+          node scripts/release-info.mjs "$tag" --github-output "$GITHUB_OUTPUT"
       - run: pnpm test
+        if: github.event_name == 'push'
       - run: pnpm run verify:artifacts
+        if: github.event_name == 'push'
       - name: Create checksums for verified archives
+        if: github.event_name == 'push'
         run: shasum -a 256 aruniverse-logi-rex-*.tgz > SHA256SUMS
       - name: Publish GitHub Release
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRERELEASE: ${{ steps.release.outputs.prerelease }}
@@ -45,6 +55,7 @@ jobs:
             --verify-tag --title "logi-rex $GITHUB_REF_NAME" --generate-notes \
             aruniverse-logi-rex-*.tgz SHA256SUMS
       - name: Publish public npm package
+        if: github.event_name == 'push'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PRERELEASE: ${{ steps.release.outputs.prerelease }}

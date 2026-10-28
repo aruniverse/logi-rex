@@ -52,6 +52,8 @@ Nothing in the local build creates a remote, pushes code, or publishes a package
 
 Starting with `v0.1.0-alpha.2`, release tags target the public npm registry at `https://registry.npmjs.org`, not GitHub Packages. The existing `v0.1.0-alpha.1` was published through GitHub Releases and GitHub Packages; its tag and assets are unchanged.
 
+The first npm publication is publicly installable with verified provenance. Its bootstrap also assigned `latest` to the alpha. Tag correction using the bootstrap credential returned HTTP 403, so removal is pending registry authorization. Use `@next` or an exact prerelease version; the current `latest` alias does not identify a stable release.
+
 The workflow has `contents: write` for GitHub Releases and `id-token: write` for npm trusted publishing. It does not need `packages: write`. `GITHUB_TOKEN` authenticates only the GitHub Release step, not npm publication. Releases use a fresh dependency install without restoring the CI dependency cache.
 
 ### Confirm account and scope access
@@ -69,7 +71,7 @@ The account must own the npm username or organization scope `@aruniverse` and be
 
 npm trusted publishing is configured in an existing package's settings. If `@aruniverse/logi-rex` does not yet exist on npmjs.org, use a temporary token for the first tagged release:
 
-1. In npm's account settings, create a short-lived granular token with the scope/write permissions needed for the initial publication and permission to bypass 2FA for CI. Do not grant unrelated scopes.
+1. In npm's account settings, create a short-lived granular token with direct read-write publishing permissions for the intended scope (not stage-only access) and permission to bypass 2FA for CI. Do not grant unrelated scopes.
 2. Add it privately as the repository Actions secret `NPM_TOKEN`. This command prompts for the value; do not put the value in the command:
 
    ```sh
@@ -102,6 +104,14 @@ gh secret delete NPM_TOKEN --repo aruniverse/logi-rex
 ```
 
 Revoke that temporary token in npm. With no `NPM_TOKEN` secret, the publish step has no token credential and pnpm uses GitHub Actions OIDC. The next new version/tag verifies that path; never republish a version just to test authentication. Once OIDC publication succeeds, restrict token-based publishing in npm's package settings.
+
+To verify or correct the current version's channel without publishing a version, run the workflow manually after configuring trust:
+
+```sh
+gh workflow run release.yml --repo aruniverse/logi-rex --ref main
+```
+
+Manual dispatch skips builds, GitHub Release creation, and npm publication. It validates the version on the selected ref, checks its public dist-tag, and removes `latest` only if it points to that prerelease. It fails on missing publication, a mismatched channel, or insufficient registry permissions. This verification-only run can test OIDC dist-tag access, but does not prove OIDC version publication.
 
 See the [npm trusted publishing guide](https://docs.npmjs.com/trusted-publishers/) and [pnpm publishing options](https://pnpm.io/cli/publish). Public packages published from this public repository include provenance. Keep the existing pnpm pin; switching registries does not require changing package managers.
 

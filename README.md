@@ -59,7 +59,7 @@ logi-rex clients
 logi-rex doctor
 ```
 
-For a pinned installation, use `@aruniverse/logi-rex@0.1.0-alpha.2`. A bare package name selects `latest`, which is reserved for stable releases. If an old `.npmrc` maps `@aruniverse` to GitHub Packages, remove or change that scope mapping to `https://registry.npmjs.org` first; preserve unrelated settings.
+For a pinned installation, use `@aruniverse/logi-rex@0.1.0-alpha.2`. Always opt into this preview explicitly. The initial npm bootstrap also assigned `latest` to this alpha; removing that alias is pending registry authorization. A bare package name currently selects the same alpha, not a stable release. If an old `.npmrc` maps `@aruniverse` to GitHub Packages, remove or change that scope mapping to `https://registry.npmjs.org` first; preserve unrelated settings.
 
 For a one-off command without a global installation:
 

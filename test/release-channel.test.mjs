@@ -60,6 +60,25 @@ test('invalid versions and mismatched tags cannot emit release outputs', async t
   }
 });
 
+test('manual dispatch verifies the current npm channel without publishing a version', async t => {
+  const workflow = YAML.parse(await readFile('.github/workflows/release.yml', 'utf8'));
+  assert.ok(Object.hasOwn(workflow.on, 'workflow_dispatch'));
+  const steps = workflow.jobs.release.steps;
+  for (const step of steps.filter(step => step.run?.includes('gh release create') || /^\s*pnpm publish /m.test(step.run || ''))) {
+    assert.equal(step.if, "github.event_name == 'push'");
+  }
+  const directory = await mkdtemp(join(tmpdir(), 'logi-rex-manual-channel-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const channel = steps.find(step => step.id === 'release');
+  const result = spawnSync('/bin/bash', ['-e', '-o', 'pipefail', '-c', channel.run], {
+    encoding: 'utf8',
+    env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}`, GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_REF_NAME: 'main', GITHUB_OUTPUT: join(directory, 'outputs') },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+  assert.equal(JSON.parse(result.stdout).version, pkg.version);
+});
+
 test('registry verification removes only this prerelease from latest and rejects a mismatched channel', async t => {
   const workflow = YAML.parse(await readFile('.github/workflows/release.yml', 'utf8'));
   const step = workflow.jobs.release.steps.find(step => step.name === 'Verify npm channel');
