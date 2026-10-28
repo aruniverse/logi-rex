@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import YAML from 'yaml';
 
@@ -60,6 +60,49 @@ test('invalid versions and mismatched tags cannot emit release outputs', async t
   }
 });
 
+test('registry verification removes only this prerelease from latest and rejects a mismatched channel', async t => {
+  const workflow = YAML.parse(await readFile('.github/workflows/release.yml', 'utf8'));
+  const step = workflow.jobs.release.steps.find(step => step.name === 'Verify npm channel');
+  assert.ok(step);
+  assert.equal(step.env.NPM_TAG, '${{ steps.release.outputs.npm_tag }}');
+  assert.equal(step.env.PRERELEASE, '${{ steps.release.outputs.prerelease }}');
+  const directory = await mkdtemp(join(tmpdir(), 'logi-rex-registry-channel-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const bin = join(directory, 'bin');
+  await mkdir(bin);
+  await writeFile(join(bin, 'pnpm'), `#!/bin/sh
+case "$1:$2" in
+  view:*)
+    case "$3" in
+      dist-tags.next) printf '%s\\n' "$NEXT" ;;
+      dist-tags.latest) printf '%s\\n' "$LATEST" ;;
+      *) exit 2 ;;
+    esac ;;
+  dist-tag:rm) printf '%s\\n' "$@" > "$MUTATIONS" ;;
+  *) exit 2 ;;
+esac
+`, { mode: 0o755 });
+  const cases = [
+    ['0.1.0-alpha.2', 'true', 'next', '0.1.0-alpha.2', '0.1.0-alpha.2', true, 0],
+    ['0.1.0-alpha.2', 'true', 'next', '0.1.0-alpha.2', '0.0.5', false, 0],
+    ['0.1.0-alpha.2', 'true', 'next', '0.1.0-alpha.2', '', false, 0],
+    ['0.1.0', 'false', 'latest', '0.1.0', '0.1.0', false, 0],
+    ['0.1.0-alpha.2', 'true', 'next', '0.1.0-alpha.1', '0.1.0-alpha.2', false, 1],
+    ['0.1.0-alpha.2', '', 'next', '0.1.0-alpha.2', '0.1.0-alpha.2', false, 1],
+  ];
+  for (const [index, [version, prerelease, tag, next, latest, remove, status]] of cases.entries()) {
+    await writeFile(join(directory, 'package.json'), JSON.stringify({ name: '@aruniverse/logi-rex', version }));
+    const mutations = join(directory, `mutations-${index}`);
+    const result = spawnSync('/bin/bash', ['-e', '-o', 'pipefail', '-c', step.run], {
+      cwd: directory, encoding: 'utf8',
+      env: { ...process.env, PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH}`, PRERELEASE: prerelease, NPM_TAG: tag, NEXT: next, LATEST: latest, MUTATIONS: mutations },
+    });
+    assert.equal(result.status, status, result.stderr);
+    if (remove) assert.deepEqual((await readFile(mutations, 'utf8')).trim().split('\n'), ['dist-tag', 'rm', '@aruniverse/logi-rex', 'latest', '--registry', 'https://registry.npmjs.org']);
+    else await assert.rejects(readFile(mutations), { code: 'ENOENT' });
+  }
+});
+
 test('publishing uses the classified channel and fails closed if outputs are missing or inconsistent', async t => {
   const workflow = YAML.parse(await readFile('.github/workflows/release.yml', 'utf8'));
   const steps = workflow.jobs.release.steps;
@@ -107,6 +150,7 @@ test('publishing uses the classified channel and fails closed if outputs are mis
     assert.equal(npmArgs[npmArgs.indexOf('--registry') + 1], 'https://registry.npmjs.org');
     assert.equal(npmArgs[npmArgs.indexOf('--access') + 1], 'public');
     assert.ok(npmArgs.includes('--provenance'));
+    assert.equal(npmArgs[npmArgs.indexOf('--publish-wait-timeout') + 1], '120000');
     assert.ok(npmArgs.includes('--ignore-scripts'));
     const noPublish = join(directory, 'must-not-publish');
     for (const [command, overrides] of [

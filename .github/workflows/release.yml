@@ -54,4 +54,23 @@ jobs:
             true:next|false:latest) ;;
             *) echo "Invalid release channel; refusing to publish." >&2; exit 1 ;;
           esac
-          pnpm publish aruniverse-logi-rex-*.tgz --registry https://registry.npmjs.org --access public --provenance --ignore-scripts --no-git-checks --tag "$NPM_TAG"
+          pnpm publish aruniverse-logi-rex-*.tgz --registry https://registry.npmjs.org --access public --provenance --publish-wait-timeout 120000 --ignore-scripts --no-git-checks --tag "$NPM_TAG"
+      - name: Verify npm channel
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PRERELEASE: ${{ steps.release.outputs.prerelease }}
+          NPM_TAG: ${{ steps.release.outputs.npm_tag }}
+        run: |
+          case "$PRERELEASE:$NPM_TAG" in
+            true:next|false:latest) ;;
+            *) echo "Invalid release channel; refusing to alter tags." >&2; exit 1 ;;
+          esac
+          package="$(node -p "require('./package.json').name")"
+          version="$(node -p "require('./package.json').version")"
+          test "$(pnpm view "$package" "dist-tags.$NPM_TAG" --registry https://registry.npmjs.org)" = "$version"
+          if [ "$PRERELEASE" = true ]; then
+            latest="$(pnpm view "$package" dist-tags.latest --registry https://registry.npmjs.org)"
+            if [ "$latest" = "$version" ]; then
+              pnpm dist-tag rm "$package" latest --registry https://registry.npmjs.org
+            fi
+          fi

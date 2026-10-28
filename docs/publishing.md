@@ -91,7 +91,7 @@ In the npm package's **Settings → Trusted Publisher**, select **GitHub Actions
 | Repository | `logi-rex` |
 | Workflow filename | `release.yml` |
 | Environment name | Leave blank; this workflow does not declare one. |
-| Allowed actions | Enable direct `npm publish`; staged-only permission is insufficient. |
+| Allowed actions | Enable direct `npm publish` and `npm dist-tag` for prerelease channel correction; staged-only permission is insufficient. |
 
 Enter the filename only, not `.github/workflows/release.yml`. The package repository URL must continue to identify `https://github.com/aruniverse/logi-rex`.
 
@@ -114,7 +114,7 @@ The workflow validates a canonical SemVer package version and requires the exact
 | `0.1.0` | Stable, Latest | `latest` |
 | `0.1.0-alpha.2`, `0.1.0-beta.1`, `0.1.0-rc.1` | Prerelease, never Latest | `next` |
 
-Missing or inconsistent channel outputs stop publication. The workflow does not bump the version. Start from a clean, committed worktree after configuring npm publishing.
+Missing or inconsistent channel outputs stop publication. Publishing waits up to two minutes for registry visibility, then checks the actual dist-tag. If npm assigned this prerelease to `latest`, the workflow removes only that alias; it preserves any other version already on `latest`. The workflow does not bump the version. Start from a clean, committed worktree after configuring npm publishing.
 
 ### Experimental release
 
