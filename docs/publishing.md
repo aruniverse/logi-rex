@@ -27,7 +27,7 @@ To test the npm archive without modifying your global install:
 
 ```sh
 mkdir -p /tmp/logi-rex-check
-pnpm --dir /tmp/logi-rex-check add "$(pwd)/aruniverse-logi-rex-0.1.0-alpha.1.tgz"
+pnpm --dir /tmp/logi-rex-check add "$(pwd)/aruniverse-logi-rex-0.1.0-alpha.2.tgz"
 /tmp/logi-rex-check/node_modules/.bin/logi-rex --help
 ```
 
@@ -50,7 +50,7 @@ Nothing in the local build creates a remote, pushes code, or publishes a package
 
 ## Configure npm publishing
 
-New release tags target the public npm registry at `https://registry.npmjs.org`, not GitHub Packages. The first npmjs.org publication is pending account/bootstrap setup. The existing `v0.1.0-alpha.1` was published through GitHub Releases and GitHub Packages; its tag and assets are unchanged.
+Starting with `v0.1.0-alpha.2`, release tags target the public npm registry at `https://registry.npmjs.org`, not GitHub Packages. The existing `v0.1.0-alpha.1` was published through GitHub Releases and GitHub Packages; its tag and assets are unchanged.
 
 The workflow has `contents: write` for GitHub Releases and `id-token: write` for npm trusted publishing. It does not need `packages: write`. `GITHUB_TOKEN` authenticates only the GitHub Release step, not npm publication. Releases use a fresh dependency install without restoring the CI dependency cache.
 
@@ -118,12 +118,12 @@ Missing or inconsistent channel outputs stop publication. The workflow does not 
 
 ### Experimental release
 
-For the next alpha after `0.1.0-alpha.1`:
+For the next alpha after `0.1.0-alpha.2`:
 
 ```sh
-pnpm version 0.1.0-alpha.2
+pnpm version 0.1.0-alpha.3
 pnpm run verify:artifacts
-node scripts/release-info.mjs v0.1.0-alpha.2
+node scripts/release-info.mjs v0.1.0-alpha.3
 git push origin main --follow-tags
 ```
 
@@ -159,7 +159,7 @@ An interactive recovery may require 2FA and does not create GitHub Actions prove
 
 ## Install from npm
 
-After the first npmjs.org publication, public installation requires no registry login. Previews are explicit:
+Public npm installation requires no registry login. Previews are explicit:
 
 ```sh
 pnpm add --global @aruniverse/logi-rex@next --registry=https://registry.npmjs.org

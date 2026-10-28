@@ -10,7 +10,7 @@ Use buttons, gestures, keyboard controls, and exposed wheel/dial inputs to switc
 
 - `aruniverse-logi-rex-<version>.tgz`: the CLI/export package, downloadable from GitHub Releases without a registry login.
 - `SHA256SUMS`: checksum for the released archive.
-- Future tags target the public npm registry as `@aruniverse/logi-rex`; previews use `next`, stable versions use `latest`. The first npmjs.org publication is pending [publisher setup](docs/publishing.md#configure-npm-publishing). The existing `v0.1.0-alpha.1` remains available from GitHub Releases.
+- [`@aruniverse/logi-rex`](https://www.npmjs.com/package/@aruniverse/logi-rex): the same CLI/export package on the public npm registry, starting with `0.1.0-alpha.2`. Previews use `next`; stable releases use `latest`.
 
 The source/package retains experimental SDK code. `LogiRex.lplug4` can be built for development and protocol tests, but it is not a published release asset until real Options+ host acceptance is verified.
 
@@ -34,7 +34,7 @@ Device reports are best-effort observations, not an exhaustive device/firmware/m
 
 - macOS and Rex with a working `rex` CLI and client actions.
 - Node.js 22 or later for the CLI and source builds.
-- pnpm 12.15.0, pinned in `packageManager`. Source builds use TypeScript 7.0.2 (the latest stable release when updated).
+- pnpm for CLI installation. Source builds use pnpm 12.15.0, pinned in `packageManager`, and TypeScript 7.0.2 (the latest stable release when updated).
 - Development only: `tar` and `unzip` for archive tests and artifact verification. Both are provided by macOS and the hosted CI runners.
 - **OpenLogi export target:** schema 10 with `CustomShortcut` and `per_app_bindings`, plus the supplied [Rex keybindings](examples/rex-keybindings.lua). Syntax and mapping regressions are tested; the three-button subset was accepted in OpenLogi 0.8.18. Other mappings and versions are not covered by that observation.
 - **Logi Options+ SDK target:** Node SDK 0.1.1 and Plugin API 6.3, whose documented macOS runtime was introduced in Options+ 2.2. This is an SDK requirement, not a verified host-version range.
@@ -48,18 +48,37 @@ API discovery is verified with **Rex Beta 0.1.0 (build 1497)** and server/CLI **
 
 No minimum Rex version or supported version range has been established. For another build, run `logi-rex doctor --json` and inspect `ok`, `errors`, and `unavailable`; a successful report confirms CLI/action discovery only, not full compatibility. See [Rex compatibility](docs/compatibility.md), also included as `COMPATIBILITY.md` in the plugin archive.
 
-## Install from a GitHub Release
+## Install from npm
 
-After a release is published, download its `.tgz` and install the downloaded file:
+Opt into the alpha explicitly; public installation requires no npm or GitHub login:
 
 ```sh
-pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.1.tgz
+pnpm add --global @aruniverse/logi-rex@next
 logi-rex --help
 logi-rex clients
 logi-rex doctor
 ```
 
-This route requires no registry credentials. Use the filename/version of the release you downloaded; an alpha archive includes its prerelease suffix. Once the first npmjs.org release is published, use [npm installation](docs/publishing.md#install-from-npm). Previews use `@aruniverse/logi-rex@next`, not the default stable channel.
+For a pinned installation, use `@aruniverse/logi-rex@0.1.0-alpha.2`. A bare package name selects `latest`, which is reserved for stable releases. If an old `.npmrc` maps `@aruniverse` to GitHub Packages, remove or change that scope mapping to `https://registry.npmjs.org` first; preserve unrelated settings.
+
+For a one-off command without a global installation:
+
+```sh
+pnpm dlx @aruniverse/logi-rex@next doctor
+```
+
+Installation does not modify live configuration. Continue with [Connect OpenLogi](#connect-openlogi) to generate and review your bindings.
+
+### Install from a GitHub Release
+
+Alternatively, download the release's `.tgz` and `SHA256SUMS`, then verify and install the exact archive:
+
+```sh
+shasum -a 256 -c SHA256SUMS
+pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.2.tgz
+```
+
+This route also requires no registry credentials. Use the filename/version of the release you downloaded; an alpha archive includes its prerelease suffix. Both routes install the same CLI/export package.
 
 ### Build locally
 
@@ -72,7 +91,7 @@ pnpm install --frozen-lockfile
 pnpm test
 pnpm run verify:artifacts
 node dist/cli.mjs doctor
-pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.1.tgz
+pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.2.tgz
 ```
 
 `pnpm run verify:artifacts` builds both archives, tests the minified code and packaged plugin, and verifies a clean install of the CLI. It needs `tar` and `unzip`, provided by macOS and the hosted macOS/Linux CI runners. `pnpm run build:pack` remains available for a build without artifact verification.
