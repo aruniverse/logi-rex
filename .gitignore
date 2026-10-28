@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.lplug4
+*.tgz
+SHA256SUMS
+.DS_Store
+.firecrawl/
+.env
+.env.*
+!.env.example

@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: '@aruniverse'
+      - run: pnpm install --frozen-lockfile
+      - name: Classify version tag
+        id: release
+        run: node scripts/release-info.mjs "$GITHUB_REF_NAME" --github-output "$GITHUB_OUTPUT"
+      - run: pnpm test
+      - run: pnpm run verify:artifacts
+      - name: Create checksums for verified archives
+        run: shasum -a 256 LogiRex.lplug4 aruniverse-logi-rex-*.tgz > SHA256SUMS
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRERELEASE: ${{ steps.release.outputs.prerelease }}
+        run: |
+          case "$PRERELEASE" in
+            true) flags=(--prerelease --latest=false) ;;
+            false) flags=(--latest) ;;
+            *) echo "Invalid prerelease output; refusing to publish." >&2; exit 1 ;;
+          esac
+          gh release create "$GITHUB_REF_NAME" "${flags[@]}" \
+            --verify-tag --title "logi-rex $GITHUB_REF_NAME" --generate-notes \
+            LogiRex.lplug4 aruniverse-logi-rex-*.tgz SHA256SUMS
+      - name: Publish GitHub Package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRERELEASE: ${{ steps.release.outputs.prerelease }}
+          NPM_TAG: ${{ steps.release.outputs.npm_tag }}
+        run: |
+          case "$PRERELEASE:$NPM_TAG" in
+            true:next|false:latest) ;;
+            *) echo "Invalid release channel; refusing to publish." >&2; exit 1 ;;
+          esac
+          pnpm publish aruniverse-logi-rex-*.tgz --ignore-scripts --no-git-checks --tag "$NPM_TAG"

@@ -1,0 +1,74 @@
+{
+  "name": "@aruniverse/logi-rex",
+  "version": "0.1.0",
+  "description": "Rex action bridge, Logi Options+ SDK plugin, and OpenLogi starter-mapping exporter.",
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "main": "./dist/bridge.mjs",
+  "bin": {
+    "logi-rex": "./dist/cli.mjs"
+  },
+  "exports": {
+    ".": "./dist/bridge.mjs",
+    "./catalog": "./dist/catalog.mjs",
+    "./profiles": "./dist/profiles.mjs",
+    "./actions": "./dist/actions.mjs"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "examples",
+    "LICENSE",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build": "pnpm run typecheck && tsup",
+    "build:pack": "pnpm run build --minify && pnpm run pack:plugin",
+    "pack:plugin": "logitoolkit pack",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm run build && pnpm run test:built",
+    "test:built": "node --test test/*.test.mjs",
+    "verify:artifacts": "pnpm run build:pack && pnpm run test:built && pnpm pack --ignore-scripts && node scripts/verify-artifacts.mjs",
+    "link:plugin": "logitoolkit link",
+    "unlink:plugin": "logitoolkit unlink",
+    "watch": "tsup --watch",
+    "prepack": "pnpm run build",
+    "version": "node scripts/sync-version.mjs"
+  },
+  "author": "aruniverse",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aruniverse/logi-rex.git"
+  },
+  "homepage": "https://github.com/aruniverse/logi-rex#readme",
+  "bugs": {
+    "url": "https://github.com/aruniverse/logi-rex/issues"
+  },
+  "keywords": [
+    "logitech",
+    "rex",
+    "openlogi",
+    "logi-options-plus",
+    "mx-master",
+    "mx-keys"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "devDependencies": {
+    "@logitech/plugin-sdk": "0.1.1",
+    "@logitech/plugin-toolkit": "0.1.1",
+    "@types/node": "^22.18.8",
+    "semver": "^7.8.5",
+    "smol-toml": "^1.9.1",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2",
+    "ws": "8.22.0",
+    "yaml": "^2.8.1"
+  }
+}

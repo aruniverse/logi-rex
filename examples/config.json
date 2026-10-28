@@ -1,0 +1,12 @@
+{
+  "requireForeground": true,
+  "allowDestructive": false,
+  "customActions": [
+    {
+      "id": "clear-terminal",
+      "title": "Clear terminal (Ctrl+L)",
+      "action": "pane.send_key",
+      "args": { "key": "ctrl+l" }
+    }
+  ]
+}

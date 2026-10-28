@@ -1,0 +1,10 @@
+type: plugin4
+name: LogiRex
+version: 0.1.0
+displayName: logi-rex
+description: Rex commands and adjustments through the Logi Actions SDK.
+author: aruniverse
+minimumLoupedeckVersion: 6.3
+pluginType: remote
+pluginRuntime: nodejs
+entryPoint: index.mjs

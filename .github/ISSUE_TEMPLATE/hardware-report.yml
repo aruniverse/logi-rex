@@ -1,0 +1,109 @@
+name: Hardware/setup observation
+description: Share observed behavior to help localize an adapter or upstream device-manager issue.
+title: "[Setup] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Optional setup observations are welcome; you do not need to complete a hardware test matrix.
+        logi-rex owns its mappings and software adapters. OpenLogi/Options+ and firmware own device input, discovery, pairing, and transport.
+        Report only what you tried, including unknown or Not tested results. Ordinary software bug reports do not require this form.
+        Remove device identities/serial numbers, client IDs/labels, account names, home-directory paths, and secrets before posting.
+        Do not include terminal contents or access tokens. This form does not redact your text.
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - MX Master 3S
+        - MX Master 4
+        - MX Keys
+    validations:
+      required: true
+  - type: dropdown
+    id: integration
+    attributes:
+      label: Integration used
+      options:
+        - OpenLogi native profile
+        - Logi Options+ plugin
+        - Logi Options+ keyboard shortcuts
+        - Direct CLI
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Device connection
+      options:
+        - Bluetooth
+        - Logi Bolt receiver
+        - Unifying receiver
+        - Other (describe in steps)
+    validations:
+      required: true
+  - type: dropdown
+    id: preset
+    attributes:
+      label: Workflow preset
+      options:
+        - tabs
+        - panes
+        - sessions
+        - Not applicable (SDK/CLI)
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Exact environment
+      description: Include the MX Keys variant, firmware if available, and whether more than one device manager was active. Do not include serial numbers or device identities.
+      placeholder: |
+        logi-rex version/tag (from package or release filename):
+        Device variant and firmware:
+        macOS version:
+        Rex app version/build:
+        Rex server version:
+        OpenLogi or Options+ version:
+        Device managers active:
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Inputs tried and observed results
+      description: Record only the inputs you tried and their expected/observed behavior. A comprehensive device or connection test is not required; Not tested is valid.
+      placeholder: |
+        Control/input | Expected | Observed | Pass / Fail / Not tested
+        Back button | Previous pane | ... | ...
+        Thumb wheel | ... | ... | ...
+        Switch away from Rex | No Rex action | ... | ...
+        Sleep/reconnect | ... | ... | ...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps and configuration changes
+      description: State the preset, gesture setting, and mapping changes. Note whether the symptom also occurs outside Rex or without logi-rex, if known; you do not need to prove which layer caused it.
+      placeholder: |
+        1. In a disposable Rex session...
+        2. Press/turn...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Redacted diagnostics (optional)
+      description: Run logi-rex doctor --json. Remove identifiers, labels, home-directory paths, account names, and secrets before pasting. This form does not redact automatically.
+      render: json
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Report confirmation
+      options:
+        - label: I removed serial numbers, device/client identifiers, account names, private paths, and secrets from this report.
+          required: true
+        - label: I reported only observed results and left untested controls marked Not tested.
+          required: true
