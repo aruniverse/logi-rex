@@ -1,6 +1,6 @@
 # Build and publish
 
-The project distributes a Logitech plugin and an npm package from the same versioned source. Publishing is not required for local development.
+The OpenLogi alpha distributes the CLI/export package and its checksum. Experimental Logitech plugin code is retained in the source/package and built by the validation gate, but the unverified `.lplug4` installer is not uploaded as a release asset. Publishing is not required for local development.
 
 ## Build the artifacts
 
@@ -8,14 +8,14 @@ The project distributes a Logitech plugin and an npm package from the same versi
 pnpm install --frozen-lockfile
 pnpm test
 pnpm run verify:artifacts
-shasum -a 256 LogiRex.lplug4 aruniverse-logi-rex-*.tgz > SHA256SUMS
+shasum -a 256 aruniverse-logi-rex-*.tgz > SHA256SUMS
 ```
 
 Outputs:
 
-- `LogiRex.lplug4`: Logitech's plugin archive, built with `@logitech/plugin-toolkit`.
+- `LogiRex.lplug4`: development/test build only, not a release asset until real host acceptance is verified.
 - `aruniverse-logi-rex-<version>.tgz`: the CLI/library and its documentation.
-- `SHA256SUMS`: checksums for both files.
+- `SHA256SUMS`: checksum for the released `.tgz`.
 
 `verify:artifacts` needs `tar` and `unzip` (provided by macOS and hosted macOS/Linux CI runners). It builds the minified plugin, reruns the test suite against that build, and creates the `.tgz`. The verifier rejects unsafe archive paths, links/special files, missing or mismatched content, and unexpected runtime dependencies. It runs SDK protocol tests from the `.lplug4` payload, installs the `.tgz` with pnpm in a temporary directory, and exercises the installed CLI and paired setup export. Temporary files are removed afterward. No live Rex or device configuration is changed.
 
@@ -107,7 +107,7 @@ pnpm publish ./aruniverse-logi-rex-0.1.0-alpha.1.tgz --tag next --ignore-scripts
 
 Use `--tag latest` only for a stable version. Do not replace release assets or reuse a version for different code.
 
-The workflow has been prepared, not executed. Confirm the repository's Actions/package permissions and inspect the first release logs.
+Confirm the repository's Actions/package permissions and inspect the first release logs. A local artifact gate does not prove registry permissions or public package visibility.
 
 ## Install from GitHub Packages
 

@@ -19,13 +19,15 @@ This is a software-integration status record, not a hardware certification matri
 
 | Check | Target or baseline | Current evidence |
 | --- | --- | --- |
-| Packaging and CLI | logi-rex 0.1.0 | Automated build, archive, installed-CLI, and export checks pass. |
+| Packaging and CLI | Current prerelease build | Automated build, archive, installed-CLI, and export checks pass. |
 | Rex action discovery | Rex app/server builds above | All bundled action names were found. |
-| Real-Rex action execution and native keybindings | No verified runtime version range | Not yet verified against the real app. |
-| OpenLogi export acceptance | Schema 10 target | TOML syntax and mapping regressions tested; no real OpenLogi version acceptance recorded. |
-| Logi Options+ host loading/registration | Node SDK 0.1.1 / Plugin API 6.3 target | SDK simulation tested; real host acceptance not verified. |
+| Real-Rex native actions | Rex 0.1.0 build 1541 / server `0.0.1793131181-gdd9a20` | User-confirmed three-button smoke; other actions and Node bridge dispatch not manually verified. |
+| OpenLogi export acceptance | OpenLogi 0.8.18 / schema 10 | Three-button subset accepted and observed; full presets and other versions not verified. |
+| Logi Options+ host loading/registration | Node SDK 0.1.1 / Plugin API 6.3 target | SDK simulation only; real host unverified and installer excluded from release assets. |
 
 logi-rex owns correct dispatch, plugin behavior, and configuration exports for the contracts it targets. OpenLogi/Options+ and firmware own device input, discovery, pairing, transport, and hardware behavior. Model-specific starter mappings are our data to maintain, not evidence that every variant is supported.
+
+The [local smoke record](https://github.com/aruniverse/logi-rex/blob/v0.1.0-alpha.1/docs/openlogi-smoke.md) scopes the partial OpenLogi/Rex observation to the exact setup and three bindings. It was made on the pre-alpha development snapshot, not as certification of the entire release artifact.
 
 Record real software acceptance checks before labeling a host/version verified. Best-effort device reports can add observations; they are not a mandatory exhaustive hardware release gate. Until acceptance is recorded, the corresponding adapter remains experimental.
 
@@ -41,7 +43,7 @@ rex -C CLIENT do ACTION --args JSON --json
 
 The bridge requires client discovery and client-action invocation. Before dispatching, it checks that the selected app exposes the requested action name. Rex validates the supplied action arguments. Action-name discovery cannot detect changes in argument schemas or behavior.
 
-Native OpenLogi profiles instead require `rex-bindings.lua` from a paired `logi-rex export` bundle (or the supplied `examples/rex-keybindings.lua`) to be merged into Rex `init.lua` and reloaded. They use Rex's documented `rex.bind` configuration API and send shortcuts to the focused Rex app on this Mac. They do not use bridge config, client targeting, or a CLI process per input. The verified build snapshot above remains action discovery only; actual Rex-binding and OpenLogi-export acceptance still need software integration checks.
+Native OpenLogi profiles instead require `rex-bindings.lua` from a paired `logi-rex export` bundle (or the supplied `examples/rex-keybindings.lua`) to be merged into Rex `init.lua` and reloaded. They use Rex's documented `rex.bind` configuration API and send shortcuts to the focused Rex app on this Mac. They do not use bridge config, client targeting, or a CLI process per input. The older baseline above remains action discovery only; the newer local observation covers only the three native bindings described in the smoke record.
 
 ## Check another Rex build
 

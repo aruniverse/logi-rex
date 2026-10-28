@@ -6,7 +6,7 @@ logi-rex owns its Rex calls, exported mappings, Lua bindings, and SDK plugin beh
 
 ## Observation scope
 
-Automated tests do not establish hardware support, and including a starter mapping does not certify a device. No device-level observations have been recorded here. We do not maintain a promise to test every device, firmware, connection, and macOS combination.
+Automated tests do not establish hardware support, and including a starter mapping does not certify a device. A [three-button local OpenLogi/Rex observation](openlogi-smoke.md) is recorded, with explicit version and coverage limits. We do not maintain a promise to test every device, firmware, connection, and macOS combination.
 
 A useful report records the inputs actually tried, their expected and observed behavior, and the relevant software versions. An evidence link can document a specific successful setup without implying support for every variant. Partial results, failures, and Not tested are valid outcomes.
 

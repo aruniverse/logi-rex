@@ -31,7 +31,7 @@ jobs:
       - run: pnpm test
       - run: pnpm run verify:artifacts
       - name: Create checksums for verified archives
-        run: shasum -a 256 LogiRex.lplug4 aruniverse-logi-rex-*.tgz > SHA256SUMS
+        run: shasum -a 256 aruniverse-logi-rex-*.tgz > SHA256SUMS
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
           esac
           gh release create "$GITHUB_REF_NAME" "${flags[@]}" \
             --verify-tag --title "logi-rex $GITHUB_REF_NAME" --generate-notes \
-            LogiRex.lplug4 aruniverse-logi-rex-*.tgz SHA256SUMS
+            aruniverse-logi-rex-*.tgz SHA256SUMS
       - name: Publish GitHub Package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

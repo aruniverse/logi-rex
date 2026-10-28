@@ -72,6 +72,8 @@ test('publishing uses the classified channel and fails closed if outputs are mis
   assert.equal(github.env.PRERELEASE, '${{ steps.release.outputs.prerelease }}');
   assert.equal(npm.env.PRERELEASE, '${{ steps.release.outputs.prerelease }}');
   assert.equal(npm.env.NPM_TAG, '${{ steps.release.outputs.npm_tag }}');
+  const checksums = steps.find(step => step.run?.includes('shasum'));
+  assert.ok(!checksums.run.includes('LogiRex.lplug4'), 'unverified Options+ installer must not be a release asset');
   for (const version of ['0.1.0', '0.1.0-alpha.1']) {
     const directory = await mkdtemp(join(tmpdir(), 'logi-rex-publish-fixture-'));
     t.after(() => rm(directory, { recursive: true, force: true }));
@@ -92,6 +94,9 @@ test('publishing uses the classified channel and fails closed if outputs are mis
     assert.equal(ghArgs.includes('--prerelease'), info.prerelease);
     assert.equal(ghArgs.includes('--latest=false'), info.prerelease);
     assert.equal(ghArgs.includes('--latest'), !info.prerelease);
+    assert.ok(ghArgs.includes(`aruniverse-logi-rex-${version}.tgz`));
+    assert.ok(ghArgs.includes('SHA256SUMS'));
+    assert.ok(!ghArgs.includes('LogiRex.lplug4'));
     const npmLog = join(directory, 'npm-args');
     const npmResult = spawnSync('/bin/bash', ['-e', '-o', 'pipefail', '-c', npm.run], { cwd: directory, env: { ...env, ARG_LOG: npmLog }, encoding: 'utf8' });
     assert.equal(npmResult.status, 0, npmResult.stderr);

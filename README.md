@@ -4,13 +4,15 @@ An action bridge for [Rex](https://www.superlogical.com/rex), with a Logi Option
 
 Use buttons, gestures, keyboard controls, and exposed wheel/dial inputs to switch tabs, focus and split panes, change sessions, resize splits, search, and adjust fonts.
 
-**Status: experimental adapter.** Automated tests cover packaging, bridge behavior, configuration generation, and simulated SDK callbacks. Real-Rex action execution, acceptance of exports by OpenLogi, and plugin loading in the real Logi Options+ host remain unverified. Action discovery is recorded separately below. The Logitech Node.js SDK is beta.
+**Status: OpenLogi-focused alpha.** A local three-button native mapping smoke check passed with OpenLogi 0.8.18 and Rex build 1541; see the [scoped observation](docs/openlogi-smoke.md). This is not full-preset or universal hardware verification. Automated checks cover packaging, configuration generation, bridge behavior, and simulated SDK callbacks. The CLI bridge and Logi Options+ host path remain experimental; no unverified Options+ installer is attached to this release.
 
 ## What ships
 
-- `LogiRex.lplug4`: the plugin for Logi Options+, built with Logitech's official SDK and toolkit.
-- `aruniverse-logi-rex-<version>.tgz`: an npm package containing the CLI and shared bridge, downloadable from GitHub Releases without a registry login.
-- `@aruniverse/logi-rex`: the same npm package, publishable to GitHub Packages.
+- `aruniverse-logi-rex-<version>.tgz`: the CLI/export package, downloadable from GitHub Releases without a registry login.
+- `SHA256SUMS`: checksum for the released archive.
+- `@aruniverse/logi-rex@next`: the same prerelease package in GitHub Packages.
+
+The source/package retains experimental SDK code. `LogiRex.lplug4` can be built for development and protocol tests, but it is not a published release asset until real Options+ host acceptance is verified.
 
 There is no macOS `.pkg` installer, background daemon, cloud service, telemetry, or raw HID driver. OpenLogi or Options+ owns the device. CLI/plugin actions use the Rex CLI; OpenLogi profiles send native keyboard shortcuts without starting a process per event.
 
@@ -34,7 +36,7 @@ Device reports are best-effort observations, not an exhaustive device/firmware/m
 - Node.js 22 or later for the CLI and source builds.
 - pnpm 12.15.0, pinned in `packageManager`. Source builds use TypeScript 7.0.2 (the latest stable release when updated).
 - Development only: `tar` and `unzip` for archive tests and artifact verification. Both are provided by macOS and the hosted CI runners.
-- **OpenLogi export target:** schema 10 with `CustomShortcut` and `per_app_bindings`, plus the supplied [Rex keybindings](examples/rex-keybindings.lua). Syntax and mapping regressions are tested; real OpenLogi-version acceptance is not yet verified.
+- **OpenLogi export target:** schema 10 with `CustomShortcut` and `per_app_bindings`, plus the supplied [Rex keybindings](examples/rex-keybindings.lua). Syntax and mapping regressions are tested; the three-button subset was accepted in OpenLogi 0.8.18. Other mappings and versions are not covered by that observation.
 - **Logi Options+ SDK target:** Node SDK 0.1.1 and Plugin API 6.3, whose documented macOS runtime was introduced in Options+ 2.2. This is an SDK requirement, not a verified host-version range.
 - Use **one device manager at a time**. OpenLogi and Options+ can compete for the same HID controls.
 
@@ -51,7 +53,7 @@ No minimum Rex version or supported version range has been established. For anot
 After a release is published, download its `.tgz` and install the downloaded file:
 
 ```sh
-pnpm add --global ./aruniverse-logi-rex-0.1.0.tgz
+pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.1.tgz
 logi-rex --help
 logi-rex clients
 logi-rex doctor
@@ -70,10 +72,10 @@ pnpm install --frozen-lockfile
 pnpm test
 pnpm run verify:artifacts
 node dist/cli.mjs doctor
-pnpm add --global ./aruniverse-logi-rex-0.1.0.tgz
+pnpm add --global ./aruniverse-logi-rex-0.1.0-alpha.1.tgz
 ```
 
-The repository URL becomes available when the owner publishes it. `pnpm run verify:artifacts` builds both archives, tests the minified code and packaged plugin, and verifies a clean install of the CLI. It needs `tar` and `unzip`, provided by macOS and the hosted macOS/Linux CI runners. `pnpm run build:pack` remains available for a build without artifact verification.
+`pnpm run verify:artifacts` builds both archives, tests the minified code and packaged plugin, and verifies a clean install of the CLI. It needs `tar` and `unzip`, provided by macOS and the hosted macOS/Linux CI runners. `pnpm run build:pack` remains available for a build without artifact verification.
 
 ## Check your installation
 
@@ -157,7 +159,9 @@ OpenLogi's per-app overlay accepts single actions, not per-direction gesture map
 
 ## Connect Logi Options+
 
-1. Download `LogiRex.lplug4`, or build it with `pnpm run build:pack`.
+This path is experimental and not part of the OpenLogi alpha's manual acceptance scope. No `.lplug4` installer is attached to the release.
+
+1. For development, build `LogiRex.lplug4` with `pnpm run build:pack`.
 2. Open it with Logi Options+/Logi Plugin Service and complete the host's installation prompts.
 3. Find **logi-rex** in the host's plugin actions. Commands are grouped under **Rex commands**; adjustments are under **Rex wheels and dials**.
 4. Add actions to the Actions Ring or another control assignment supported by your installed host and device. An adjustment requires a control that the host exposes to the SDK as an adjustment; a mouse wheel is not automatically exposed just because the plugin provides one.
