@@ -1,9 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+
+test('npm documentation is limited to user-facing guides', async () => {
+  const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+  assert.deepEqual(pkg.files.filter(path => path === 'docs' || path.startsWith('docs/')), [
+    'docs/compatibility.md',
+    'docs/devices.md',
+    'docs/hardware-testing.md',
+    'docs/openlogi-smoke.md',
+  ]);
+  assert.doesNotMatch(await readFile('README.md', 'utf8'), /\]\(docs\/publishing\.md(?:#.*?)?\)/);
+});
 
 // Tiny ZIP fixtures: a Unix symlink, and a regular file with a parent-directory path.
 const unsafe = [

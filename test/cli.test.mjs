@@ -242,7 +242,7 @@ test('Rex compatibility documentation is included in both package formats', asyn
   assert.match(note, /0\.0\.1793047680-g2db882/);
   assert.match(note, /not a minimum-version requirement/);
   assert.match(readme, /\]\(docs\/compatibility\.md\)/);
-  assert.ok(pkg.files.includes('docs'));
+  assert.ok(pkg.files.includes('docs/compatibility.md'));
   assert.equal(await readFile('dist/COMPATIBILITY.md', 'utf8'), note);
 });
 

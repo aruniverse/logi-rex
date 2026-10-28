@@ -8,3 +8,4 @@ SHA256SUMS
 .env
 .env.*
 !.env.example
+/docs/publishing.md

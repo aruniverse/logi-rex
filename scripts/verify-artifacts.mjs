@@ -69,7 +69,7 @@ async function verify() {
   for (const hook of ['preinstall', 'install', 'postinstall', 'prepare']) {
     assert.equal(packed.scripts?.[hook], undefined, `Unexpected install hook: ${hook}`);
   }
-  for (const name of ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'docs/compatibility.md', 'examples/rex-keybindings.lua']) {
+  for (const name of ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', ...pkg.files.filter(file => file.startsWith('docs/')), 'examples/rex-keybindings.lua']) {
     assert.deepEqual(await fromTar(name), await readFile(name), `Package content differs: ${name}`);
   }
   const temporary = await mkdtemp(join(tmpdir(), 'logi-rex-artifacts-'));

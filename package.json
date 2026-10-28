@@ -16,7 +16,10 @@
   },
   "files": [
     "dist",
-    "docs",
+    "docs/compatibility.md",
+    "docs/devices.md",
+    "docs/hardware-testing.md",
+    "docs/openlogi-smoke.md",
     "examples",
     "LICENSE",
     "README.md",

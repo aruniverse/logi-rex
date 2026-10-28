@@ -59,7 +59,7 @@ logi-rex clients
 logi-rex doctor
 ```
 
-For a pinned installation, use `@aruniverse/logi-rex@0.1.0-alpha.3`. Always opt into this preview explicitly. The initial npm bootstrap also assigned `latest` to `0.1.0-alpha.2`; removal remains a separate registry-authorization check. A bare package name is not a request for a stable release while that bootstrap alias exists. If an old `.npmrc` maps `@aruniverse` to GitHub Packages, remove or change that scope mapping to `https://registry.npmjs.org` first; preserve unrelated settings.
+For a pinned installation, use `@aruniverse/logi-rex@0.1.0-alpha.3`. Always opt into this preview explicitly. The npm `latest` tag currently selects `0.1.0-alpha.2`, which is also a preview, not a stable release. If an old `.npmrc` maps `@aruniverse` to GitHub Packages, remove or change that scope mapping to `https://registry.npmjs.org` first; preserve unrelated settings.
 
 For a one-off command without a global installation:
 
@@ -222,9 +222,9 @@ CLI/plugin dispatches use argument arrays, not shell commands. Plugin events sha
 
 `--background` and `--allow-destructive` are explicit bridge overrides, not native-profile options. Keep custom commands and config files trusted: `pane.send_key` can send input to a running terminal.
 
-## Publish
+## Validation
 
-See [the publishing guide](docs/publishing.md). CI tests macOS and Linux on Node.js 22 and 24, including minified builds, archive validation, packaged-plugin protocol tests, and an isolated CLI install/export smoke test. The version-tag workflow uses the same artifact gate before uploading checksums and archives to a GitHub Release and publishing the verified archive publicly to npmjs.org with provenance. npm trusted publishing uses GitHub Actions OIDC; a temporary `NPM_TOKEN` secret supports the first publication before package-level trust can be configured. Stable versions use `latest`; alpha/beta/RC versions use npm's `next` tag and GitHub prereleases that cannot become Latest. Missing or inconsistent channel outputs stop publication. No workflow changes the version or publishes until you push a matching version tag.
+CI tests macOS and Linux on Node.js 22 and 24, including minified builds, archive validation, packaged-plugin protocol tests, and an isolated CLI install/export smoke test. GitHub Releases include archive checksums, and npm releases include verified build provenance. These software checks do not replace the scoped integration observations documented above.
 
 ## License
 
